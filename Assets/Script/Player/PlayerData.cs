@@ -42,4 +42,19 @@ public class PlayerData : ScriptableObject
 
     [Tooltip("The amount of fixed frames we buffer a jump. This allows jump input before actually hitting the ground")]
     public int JumpBufferFrames = 7;
+    
+    [Header("COLLISIONS")]
+    [Tooltip("Set this to the layer your player is on")]
+    public LayerMask PlayerLayer;
+
+    [Tooltip("The detection distance for grounding and roof detection")]
+    public float GrounderDistance = 0.1f;
+
+    [Tooltip("Bounds for detecting walls on either side. Ensure it's wider than your vertical capsule collider")]
+    public Vector2 WallDetectorSize = new(0.75f, 1.25f);
+
+    [Header("EXTERNAL")] 
+    [Tooltip("The rate at which external velocity decays")]
+    public int ExternalVelocityDecay = 100;
+
 }

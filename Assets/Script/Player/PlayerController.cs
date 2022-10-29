@@ -10,13 +10,16 @@ public class PlayerController : MonoBehaviour
     #region Private
 
     private Rigidbody2D _rb;
-    
+    [SerializeField] private CapsuleCollider2D _col;
+
     private FrameInput _input;
     private PlayerInput _playerInput;
 
     private Vector2 _speed;
+    private Vector2 _currentExternalVelocity;
     private int _fixedFrame;
-    private bool _grounded;
+    private bool _hasControl = true;
+    private bool _cachedTriggerSetting;
 
     #endregion
 
@@ -57,8 +60,25 @@ public class PlayerController : MonoBehaviour
 
     #region Collision
 
+    private readonly RaycastHit2D[] _groundHits = new RaycastHit2D[2];
+    private readonly RaycastHit2D[] _ceilingHits = new RaycastHit2D[2];
+    private readonly Collider2D[] _wallHits = new Collider2D[5];
+    private Vector2 _groundNormal;
+    private int _groundHitCount;
+    private int _ceilingHitCount;
+    private int _wallHitCount;
     private int _frameLeftGrounded = int.MinValue;
+    private bool _grounded;
 
+    private void CheckCollisions()
+    {
+        // TODO work on my understanding of this mess
+        _groundHitCount = Physics2D.CapsuleCastNonAlloc(_col.bounds.center, _col.size, _col.direction, 0, Vector2.down,
+            _groundHits, _stats.GrounderDistance, ~_stats.PlayerLayer);
+        _ceilingHitCount = Physics2D.CapsuleCastNonAlloc(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, 
+            _ceilingHits, _stats.GrounderDistance, ~_stats.PlayerLayer);
+    }
+    
     #endregion
 
     #region Horizontal
@@ -73,7 +93,6 @@ public class PlayerController : MonoBehaviour
 
             float inputX = _input.Move.x;
             _speed.x = Mathf.MoveTowards(_speed.x, inputX * _stats.MaxSpeed, _stats.Acceleration * Time.fixedDeltaTime);
-            Debug.Log(_speed.x);
         }
     }
 
@@ -98,9 +117,12 @@ public class PlayerController : MonoBehaviour
         if ((_jumpToConsume && CanUseCoyote) || HasBufferedJump)
         {
             _coyoteUsable = false;
+            _bufferedJumpUsable = false;
+            _speed.y = _stats.JumpPower;
         }
 
         // early jump end detection
+        if (!_endedJumpEarly && !_grounded && !_input.JumpHeld && _rb.velocity.y > 0) _endedJumpEarly = true;
     }
 
     private void ResetJump()
@@ -114,6 +136,9 @@ public class PlayerController : MonoBehaviour
     
     private void ApplyVelocity()
     {
-        _rb.velocity = _speed;
+        if (!_hasControl) return;
+        _rb.velocity = _speed + _currentExternalVelocity;
+
+        _currentExternalVelocity = Vector2.MoveTowards(_currentExternalVelocity, Vector2.zero, _stats.ExternalVelocityDecay * Time.fixedDeltaTime);
     }
 }

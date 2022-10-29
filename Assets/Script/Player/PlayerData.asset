@@ -13,7 +13,14 @@ MonoBehaviour:
   m_Name: PlayerData
   m_EditorClassIdentifier: 
   Acceleration: 120
-  MaxSpeed: 14
+  MaxSpeed: 10
   GroundDeceleration: 60
   AirDeceleration: 30
   GroundingForce: -1.5
+  AllowDoubleJump: 0
+  JumpPower: 36
+  MaxFallSpeed: 40
+  FallAcceleration: 110
+  JumpEndEarlyGravityModifier: 3
+  CoyoteFrames: 7
+  JumpBufferFrames: 7

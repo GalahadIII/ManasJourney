@@ -1,7 +1,6 @@
 using UnityEngine;
 
 namespace TarodevController {
-    [CreateAssetMenu]
     public class ScriptableStats : ScriptableObject {
         [Header("MOVEMENT")] 
         [Tooltip("The top horizontal movement speed")]

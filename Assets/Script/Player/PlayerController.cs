@@ -1,144 +1,171 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
-public class PlayerController : MonoBehaviour
+namespace Player
 {
-    [SerializeField] private PlayerData _stats;
-    
-    #region Private
-
-    private Rigidbody2D _rb;
-    [SerializeField] private CapsuleCollider2D _col;
-
-    private FrameInput _input;
-    private PlayerInput _playerInput;
-
-    private Vector2 _speed;
-    private Vector2 _currentExternalVelocity;
-    private int _fixedFrame;
-    private bool _hasControl = true;
-    private bool _cachedTriggerSetting;
-
-    #endregion
-
-    #region Public
-
-    public PlayerData Stats => _stats;
-    
-    public Vector2 Speed => _speed;
-
-    #endregion
-    
-    
-    private void Awake()
+    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
+    public class PlayerController : MonoBehaviour, IPlayerController
     {
-        _playerInput = GetComponent<PlayerInput>();
-        _rb = GetComponent<Rigidbody2D>();
-    }
+        [SerializeField] private PlayerMoveStats _stats;
 
-    private void Update()
-    {
-        GatherInput();
-    }
+        #region Private
 
-    private void GatherInput()
-    {
-        _input = _playerInput.FrameInput;
-    }
-
-    private void FixedUpdate()
-    {
-        _fixedFrame++;
+        private Rigidbody2D _rb;
+        private PlayerInput _input;
+        private FrameInput _frameInput;
         
-        HandleHorizontal();
-        HandleJump();
-        
-        ApplyVelocity();
-    }
+        private int _fixedUpdateCounter;
+        private bool _dashing;
+        private bool _hasControl;
+        private bool _grounded;
+        private bool _facingRight;
+        private float _gravityScale;
 
-    #region Collision
+        #endregion
 
-    private readonly RaycastHit2D[] _groundHits = new RaycastHit2D[2];
-    private readonly RaycastHit2D[] _ceilingHits = new RaycastHit2D[2];
-    private readonly Collider2D[] _wallHits = new Collider2D[5];
-    private Vector2 _groundNormal;
-    private int _groundHitCount;
-    private int _ceilingHitCount;
-    private int _wallHitCount;
-    private int _frameLeftGrounded = int.MinValue;
-    private bool _grounded;
+        #region Public
 
-    private void CheckCollisions()
-    {
-        // TODO work on my understanding of this mess
-        _groundHitCount = Physics2D.CapsuleCastNonAlloc(_col.bounds.center, _col.size, _col.direction, 0, Vector2.down,
-            _groundHits, _stats.GrounderDistance, ~_stats.PlayerLayer);
-        _ceilingHitCount = Physics2D.CapsuleCastNonAlloc(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, 
-            _ceilingHits, _stats.GrounderDistance, ~_stats.PlayerLayer);
-    }
-    
-    #endregion
+        public Vector2 Input => _frameInput.Move;
+        public Vector2 Speed => _rb.velocity;
+        public bool Falling => _rb.velocity.y < 0;
+        public bool Jumping => _rb.velocity.y > 0;
+        public bool FacingRight => _facingRight;
 
-    #region Horizontal
+        #endregion
 
-    private void HandleHorizontal()
-    {
-        if (_input.Move.x != 0)
+        private void Awake()
         {
-            // Prevent useless holrizontal speed buildup when going agains a wall
-            if (Mathf.Approximately(_rb.velocity.x, 0) && Math.Abs(Mathf.Sign(_input.Move.x) - Mathf.Sign(_speed.x)) < 0.01f)
-                _speed.x = 0;
+            _rb = GetComponent<Rigidbody2D>();
+            _input = GetComponent<PlayerInput>();
+        }
 
-            float inputX = _input.Move.x;
-            _speed.x = Mathf.MoveTowards(_speed.x, inputX * _stats.MaxSpeed, _stats.Acceleration * Time.fixedDeltaTime);
+        private void Start()
+        {
+            _gravityScale = _rb.gravityScale;
+        }
+
+        private void Update()
+        {
+            _frameInput = _input.FrameInput;
+            if (_frameInput.JumpDown)
+            {
+                _jumpToConsume = true;
+                _frameJumpWasPressed = _fixedUpdateCounter;
+            }
+
+            if (_frameInput.JumpUp) JumpCut();
+        }
+        
+        private void FixedUpdate()
+        {
+            _fixedUpdateCounter++;
+
+            // input dependant
+            Flip();
+            Horizontal();
+            Jump();
+            ArtificialFriction();
+            
+            // !input dependant
+            FallingGravity();
+        }
+
+        #region Horizontal
+
+        private void Horizontal()
+        {
+            if (_dashing) return;
+
+            // calculate wanted direction and desired velocity
+            float targetSpeed = (_frameInput.Move.x == 0 ? 0 : MathF.Sign(_frameInput.Move.x))  * _stats.MoveSpeed;
+            // calculate difference between current volocity and target velocity
+            float speedDif = targetSpeed - _rb.velocity.x;
+            // change acceleration rate depending on situations;
+            float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? _stats.Acceleration : _stats.Decceleration;
+            // applies acceleration to speed difference, raise to a set power so acceleration increase with higher speed
+            // multiply by sign to reapply direction
+            float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, _stats.VelPower) * Mathf.Sign(speedDif);
+
+            // apply the movement force
+            _rb.AddForce(movement * Vector2.right);
+        }
+
+        private void ArtificialFriction()
+        {
+            if (!_grounded) return;
+            if (!(Mathf.Abs(_frameInput.Move.x) < 0.01f)) return;
+            
+            // use either friction amount or velocity
+            float amount = Mathf.Min(Mathf.Abs(_rb.velocity.x), Mathf.Abs(_stats.Friction));
+            // sets to movement direction
+            amount *= Mathf.Sign(_rb.velocity.x);
+            // applies force against movement direction
+            _rb.AddForce(Vector2.right * -amount, ForceMode2D.Impulse);
+
+        }
+
+        #endregion
+
+        #region Jump
+
+        private bool _jumpToConsume;
+        private int _frameJumpWasPressed;
+        
+        private bool HasBufferedJump => false; // if frameCount < framejumpwaspressed + bufferCout
+        private bool CanUseCoyote => false;
+
+        private void Jump()
+        {
+            _grounded = true;
+            if (_jumpToConsume || HasBufferedJump)
+            {
+                if (_grounded || CanUseCoyote) NormalJump();
+            }
+
+            _jumpToConsume = false;
+        }
+
+        private void NormalJump()
+        {
+            _rb.velocity = new Vector2(_rb.velocity.x, 0);
+            _rb.AddForce(Vector2.up * _stats.JumpForce, ForceMode2D.Impulse);
+        }
+
+        private void JumpCut()
+        {
+            if (!Falling)
+            {
+                // reduces current y velocity by amount[0-1] (higher the CutMultiplier the less sensitive to input it becomes)
+                _rb.AddForce(Vector2.down * (_rb.velocity.y * (1 - _stats.JumpCutMultiplier)), ForceMode2D.Impulse);
+            }
+        }
+
+        private void FallingGravity()
+        {
+            _rb.gravityScale = Falling ? _stats.FallGravityMultiplier : _gravityScale;
+        }
+
+        #endregion
+
+        private void Flip()
+        {
+            if (Mathf.Abs(_frameInput.Move.x) < 0.1f) return;
+            if (_facingRight && Mathf.Sign(_frameInput.Move.x) < 0) return;
+            if (!_facingRight && Mathf.Sign(_frameInput.Move.x) > 0) return;
+            Utilities.FlipTransform(transform);
+            _facingRight = !_facingRight;
         }
     }
 
-    #endregion
-
-    #region Jump
-
-    private bool _jumpToConsume;
-    private bool _endedJumpEarly;
-    private bool _coyoteUsable;
-    private bool _bufferedJumpUsable;
-    private int _frameJumpWasPressed = int.MinValue;
-
-    private bool CanUseCoyote => 
-        _coyoteUsable && !_grounded && _fixedFrame < _frameLeftGrounded + _stats.CoyoteFrames;
-    private bool HasBufferedJump =>
-        _grounded && _bufferedJumpUsable && _fixedFrame < _frameJumpWasPressed + _stats.JumpBufferFrames;
-    
-    private void HandleJump()
+    public interface IPlayerController
     {
-        // standard jump
-        if ((_jumpToConsume && CanUseCoyote) || HasBufferedJump)
-        {
-            _coyoteUsable = false;
-            _bufferedJumpUsable = false;
-            _speed.y = _stats.JumpPower;
-        }
-
-        // early jump end detection
-        if (!_endedJumpEarly && !_grounded && !_input.JumpHeld && _rb.velocity.y > 0) _endedJumpEarly = true;
-    }
-
-    private void ResetJump()
-    {
-        _coyoteUsable = true;
-        _bufferedJumpUsable = true;
-        _endedJumpEarly = false;
-    }
-
-    #endregion
-    
-    private void ApplyVelocity()
-    {
-        if (!_hasControl) return;
-        _rb.velocity = _speed + _currentExternalVelocity;
-
-        _currentExternalVelocity = Vector2.MoveTowards(_currentExternalVelocity, Vector2.zero, _stats.ExternalVelocityDecay * Time.fixedDeltaTime);
+        public Vector2 Input { get; }
+        public Vector2 Speed { get; }
+        public bool Falling { get; }
+        public bool Jumping { get; }
     }
 }

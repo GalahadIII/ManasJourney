@@ -11,11 +11,11 @@ namespace TarodevController {
         private void Update() => FrameInput = Gather();
 
 #if ENABLE_INPUT_SYSTEM
-        private PlayerInputActions _actions;
+        private TarodevInput _actions;
         private InputAction _move, _jump, _dash, _attack;
 
         private void Awake() {
-            _actions = new PlayerInputActions();
+            _actions = new TarodevInput();
             _move = _actions.Player.Move;
             _jump = _actions.Player.Jump;
             _dash = _actions.Player.Dash;

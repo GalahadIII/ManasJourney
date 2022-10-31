@@ -32,7 +32,7 @@ public class PlayerInput : MonoBehaviour
     {
         return new FrameInput {
             JumpDown = _jump.WasPressedThisFrame(),
-            JumpHeld = _jump.IsPressed(),
+            JumpUp = _jump.WasReleasedThisFrame(),
             DashDown = _dash.WasPressedThisFrame(),
             AttackDown = _attack.WasPressedThisFrame(),
             Move = _move.ReadValue<Vector2>()
@@ -45,7 +45,7 @@ public struct FrameInput
 {
     public Vector2 Move;
     public bool JumpDown;
-    public bool JumpHeld;
+    public bool JumpUp;
     public bool DashDown;
     public bool AttackDown;
 }

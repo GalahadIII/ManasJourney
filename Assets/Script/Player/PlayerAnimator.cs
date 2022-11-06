@@ -44,11 +44,11 @@ namespace Player
                 _state = PlayerAnimState.IDLE_BLINK;
             }
 
-            if (_player.Falling)
+            if (_player.Falling && !_player.Grounded)
             {
                 _state = PlayerAnimState.Fall;
             }
-            if (_player.Jumping)
+            if (_player.Jumping && !_player.Grounded)
             {
                 _state = PlayerAnimState.JUMP;
             }

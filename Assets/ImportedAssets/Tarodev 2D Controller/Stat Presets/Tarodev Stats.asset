@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b823639e543694d890e5f8a77be1af, type: 3}
   m_Name: Tarodev Stats
   m_EditorClassIdentifier: 
-  MaxSpeed: 14
+  MaxSpeed: 9.5
   Acceleration: 120
   GroundDeceleration: 60
   AirDeceleration: 30
@@ -24,9 +24,9 @@ MonoBehaviour:
   CrouchSlowdownFrames: 50
   CrouchBufferCheck: 0.1
   MaxAirJumps: 1
-  JumpPower: 36
-  MaxFallSpeed: 40
-  FallAcceleration: 110
+  JumpPower: 32.2
+  MaxFallSpeed: 19.5
+  FallAcceleration: 94
   JumpEndEarlyGravityModifier: 3
   CoyoteFrames: 7
   JumpBufferFrames: 7

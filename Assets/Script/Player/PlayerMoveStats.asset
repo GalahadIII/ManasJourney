@@ -19,7 +19,9 @@ MonoBehaviour:
   Friction: 0.2
   JumpForce: 7.2
   JumpCutMultiplier: 0.7
-  JumpCoyoteFrame: 10
-  JumpBufferFrame: 10
+  JumpCoyoteFrame: 5
+  JumpBufferFrame: 5
   FallGravityMultiplier: 1.9
-  DashVelocity: 50
+  AllowDash: 1
+  DashVelocity: 1
+  DashDurationFrame: 3

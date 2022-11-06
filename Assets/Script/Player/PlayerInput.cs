@@ -18,10 +18,6 @@ public class PlayerInput : MonoBehaviour
         _dash = _actions.Player.Dash;
         _attack = _actions.Player.Attack;
     }
-    
-    private void OnEnable() => _actions.Enable();
-
-    private void OnDisable() => _actions.Disable();
 
     private void Update()
     {
@@ -38,6 +34,10 @@ public class PlayerInput : MonoBehaviour
             Move = _move.ReadValue<Vector2>()
         };
     }
+    
+    private void OnEnable() => _actions.Enable();
+
+    private void OnDisable() => _actions.Disable();
 }
 
 

@@ -29,10 +29,23 @@ namespace Player
         public int JumpBufferFrame = 10;
 
         public float FallGravityMultiplier = 1.9f;
+
+
+        [Header("DASH")] 
+        public bool AllowDash = false;
         
-    
-        [Header("DASH")]
         public float DashVelocity = 50;
+
+        public int DashDurationFrame = 10;
+
+        [Header("ROLL")] 
+        public bool AllowRoll = false;
+
+        public float RollVelocity = 30;
+
+        public int RollDurationFrame = 10;
+
+
     }
 }
 

@@ -22,6 +22,7 @@ namespace Player
         [Header("JUMP")]
         public float JumpForce = 5f;
         
+        // reduces current y velocity by amount[0-1] (higher the CutMultiplier the less sensitive to input it becomes)
         public float JumpCutMultiplier = 0.5f;
         
         public int JumpCoyoteFrame = 10;

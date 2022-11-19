@@ -29,28 +29,37 @@ namespace Player
             getCurrentState();
             
             if (_state == _lastState) return;
+            //Debug.Log(_state);
             _anim.Play(_state);
             _lastState = _state;
         }
 
         private void getCurrentState()
         {
+            if (_player.Input.x == 0)
+            {
+                _state = PlayerAnimState.IDLE_BLINK;
+            }
             if (Mathf.Abs(_player.Input.x) > 0)
             {
                 _state = PlayerAnimState.RUN;
             }
-            else
-            {
-                _state = PlayerAnimState.IDLE_BLINK;
-            }
-
             if (_player.Falling && !_player.Grounded)
             {
-                _state = PlayerAnimState.Fall;
+                _state = PlayerAnimState.FALL;
             }
             if (_player.Jumping && !_player.Grounded)
             {
                 _state = PlayerAnimState.JUMP;
+            }
+            if (_player.Rolling)
+            {
+                _state = PlayerAnimState.ROLL;
+            }
+
+            if (_player.Dashing)
+            {
+                _state = PlayerAnimState.DASH;
             }
         }
     }
@@ -64,8 +73,10 @@ namespace Player
         // movement
         public const string RUN = "Run";
         public const string JUMP = "Jump";
+        public const string DASH = "Dash";
         public const string PRE_JUMP = "BeforeJump";
-        public const string Fall = "Fall";
+        public const string FALL = "Fall";
+        public const string ROLL = "Roll";
         
         // attack
         public const string ATTACK1 = "Attack1";

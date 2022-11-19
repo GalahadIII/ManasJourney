@@ -66,8 +66,8 @@ namespace Player
                 _frameJumpWasPressed = _fixedUpdateCounter;
             }
             if (_frameInput.JumpUp) JumpCut();
-            
-            if (_frameInput.DashDown && _stats.AllowDash) _dashToConsume = true;
+
+            if (_frameInput.DashDown && (_stats.AllowDash || _stats.AllowRoll)) _dodgeToConsume = true;
         }
         
         private void FixedUpdate()
@@ -78,12 +78,12 @@ namespace Player
             Flip();
             Horizontal();
             Jump();
-            Dash();
+            Dodge();
             ArtificialFriction();
             
             
             // !input dependant
-            FallingGravity();
+            GravityModifier();
         }
 
         #region Checks
@@ -114,7 +114,7 @@ namespace Player
 
         private void Horizontal()
         {
-            if (_dashing) return;
+            if (_dashing || _rolling) return;
 
             // calculate wanted direction and desired velocity
             float targetSpeed = (_frameInput.Move.x == 0 ? 0 : MathF.Sign(_frameInput.Move.x))  * _stats.MoveSpeed;
@@ -190,50 +190,77 @@ namespace Player
         {
             if (!Falling)
             {
-                // reduces current y velocity by amount[0-1] (higher the CutMultiplier the less sensitive to input it becomes)
                 _rb.AddForce(Vector2.down * (_rb.velocity.y * (1 - _stats.JumpCutMultiplier)), ForceMode2D.Impulse);
             }
         }
 
-        private void FallingGravity()
+        private void GravityModifier()
         {
             _rb.gravityScale = Falling ? _stats.FallGravityMultiplier : _gravityScale;
         }
 
         #endregion
 
-        #region Dash
-
-        private bool _rolling;
+        #region Dodge
+        
+        private bool _dodgeToConsume;
+        private int _frameDodgeWasPressed;
+        private float dodgeDir;
+        
         private bool _dashing;
-        private bool _dashToConsume;
-        private int _frameDashWasPressed;
+        private bool _rolling;
+
+        private void Dodge()
+        {
+            if (_dodgeToConsume)
+            {
+                _frameDodgeWasPressed = _fixedUpdateCounter;
+                _dodgeToConsume = false;
+                float moveX = _frameInput.Move.x;
+                if (moveX.Equals(0)) return;
+                dodgeDir = MathF.Sign(moveX);
+
+                if (_grounded && _stats.AllowRoll) _rolling = true;
+                else if (!_grounded && _stats.AllowDash) _dashing = true;
+            }
             
+            if (_dashing) Dash();
+            if (_rolling) Roll();
+        }
+        
         private void Dash()
         {
-            if (!_dashToConsume) return;
-            
-            Vector2 dir = new Vector2(_frameInput.Move.x, Mathf.Max(_frameInput.Move.y, 0f)).normalized;
-            if (dir == Vector2.zero)
+            if (_fixedUpdateCounter > _frameDodgeWasPressed + _stats.DashDurationFrame)
             {
-                _dashToConsume = false;
+                StopDodge();
                 return;
             }
 
-            if (_grounded)
+            _dashing = true;
+            _rb.velocity = new Vector2(_rb.velocity.x, 0);
+            float dashVel = dodgeDir * _stats.DashVelocity;
+            _rb.AddForce(dashVel * Vector2.right);
+            
+        }
+
+        private void Roll()
+        {
+            if (_fixedUpdateCounter > _frameDodgeWasPressed + _stats.RollDurationFrame)
             {
-                // roll
-                _rb.AddForce(Vector2.right * _stats.RollVelocity * dir, ForceMode2D.Impulse);
-                _rolling = true;
-            }
-            else
-            {
-                // dash
-                _rb.AddForce(Vector2.right * _stats.DashVelocity * dir, ForceMode2D.Impulse);
-                _dashing = false;
+                StopDodge();
+                return;
             }
 
-            _dashToConsume = false;
+            _rolling = true;
+            _rb.velocity = new Vector2(_rb.velocity.x, 0);
+            float rollVel = dodgeDir * _stats.RollVelocity;
+            _rb.AddForce(rollVel * Vector2.right);
+        }
+        
+        private void StopDodge()
+        {
+            _rolling = false;
+            _dashing = false;
         }
 
         #endregion
@@ -255,6 +282,7 @@ namespace Player
         public bool Falling { get; }
         public bool Jumping { get; }
         public bool Rolling { get; }
+        public bool Dashing { get; }
         public bool Grounded { get; }
     }
 }

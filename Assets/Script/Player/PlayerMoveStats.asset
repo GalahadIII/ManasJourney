@@ -23,5 +23,8 @@ MonoBehaviour:
   JumpBufferFrame: 5
   FallGravityMultiplier: 1.9
   AllowDash: 1
-  DashVelocity: 1
-  DashDurationFrame: 3
+  DashVelocity: 70
+  DashDurationFrame: 10
+  AllowRoll: 1
+  RollVelocity: 35
+  RollDurationFrame: 20

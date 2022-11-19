@@ -295,7 +295,7 @@ namespace TarodevController {
         private static readonly int Crawl = Animator.StringToHash("Crawl");
 
         private static readonly int Jump = Animator.StringToHash("Jump");
-        private static readonly int Fall = Animator.StringToHash("Fall");
+        private static readonly int Fall = Animator.StringToHash("FALL");
         private static readonly int Land = Animator.StringToHash("Land");
         
         private static readonly int ClimbIdle = Animator.StringToHash("ClimbIdle");

@@ -1,9 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace Player
 {
@@ -17,7 +13,7 @@ namespace Player
         [SerializeField] private LayerMask _groundLayerMask; 
         
         private Rigidbody2D _rb;
-        private PlayerInput _input;
+        private InputManager _input;
         private FrameInput _frameInput;
         
         private int _fixedUpdateCounter;
@@ -46,7 +42,7 @@ namespace Player
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
-            _input = GetComponent<PlayerInput>();
+            _input = GetComponent<InputManager>();
             _feetCollider = GetComponent<BoxCollider2D>();
         }
 
@@ -167,8 +163,6 @@ namespace Player
             {
                 if (_grounded || CanUseCoyote) NormalJump();
             }
-
-            
             _jumpToConsume = false;
         }
 

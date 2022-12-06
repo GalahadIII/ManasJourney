@@ -1,18 +1,18 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Player;
+using UnityEngine.InputSystem;
 // ReSharper disable NotAccessedField.Global
 
-public class PlayerInput : MonoBehaviour
+public class InputManager : MonoBehaviour
 {
     public FrameInput FrameInput { get; private set; }
     
-    private PlayerInputAction _actions;
+    private PlayerInputActions _actions;
     private InputAction _move, _jump, _dash, _attack;
 
     private void Awake()
     {
-        _actions = new PlayerInputAction();
+        _actions = new PlayerInputActions();
         _move = _actions.Player.Move;
         _jump = _actions.Player.Jump;
         _dash = _actions.Player.Dash;
@@ -27,11 +27,11 @@ public class PlayerInput : MonoBehaviour
     private FrameInput Gather()
     {
         return new FrameInput {
+            Move = _move.ReadValue<Vector2>(),
             JumpDown = _jump.WasPressedThisFrame(),
             JumpUp = _jump.WasReleasedThisFrame(),
             DashDown = _dash.WasPressedThisFrame(),
-            AttackDown = _attack.WasPressedThisFrame(),
-            Move = _move.ReadValue<Vector2>()
+            AttackDown = _attack.WasPressedThisFrame()
         };
     }
     
@@ -39,7 +39,6 @@ public class PlayerInput : MonoBehaviour
 
     private void OnDisable() => _actions.Disable();
 }
-
 
 public struct FrameInput
 {

@@ -18,9 +18,8 @@ namespace Player
 
         void Awake()
         {
-            _anim = GetComponent<Animator>();
             _sr = GetComponent<SpriteRenderer>();
-            
+            _anim = GetComponent<Animator>();
             _player = GetComponentInParent<IPlayerController>();
         }
         
@@ -56,7 +55,6 @@ namespace Player
             {
                 _state = PlayerAnimState.ROLL;
             }
-
             if (_player.Dashing)
             {
                 _state = PlayerAnimState.DASH;

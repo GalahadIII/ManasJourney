@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: PlayerMoveStats
   m_EditorClassIdentifier: 
   MoveSpeed: 7
-  Acceleration: 5
-  Decceleration: 2.5
-  VelPower: 1.2
-  Friction: 0.2
+  Acceleration: 20
+  Decceleration: 20
+  VelPower: 0.7
+  Friction: 1
   JumpForce: 7.2
-  JumpCutMultiplier: 0.7
+  JumpCutMultiplier: 0.4
   JumpCoyoteFrame: 5
   JumpBufferFrame: 5
   FallGravityMultiplier: 1.9

@@ -246,7 +246,6 @@ namespace Player
             }
 
             _rolling = true;
-            _rb.velocity = new Vector2(_rb.velocity.x, 0);
             float rollVel = dodgeDir * _stats.RollVelocity;
             _rb.AddForce(rollVel * Vector2.right);
         }

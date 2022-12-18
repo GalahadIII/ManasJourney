@@ -272,6 +272,69 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: TextEP
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 14
+        width: 16
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0bded33f546ccfd43ae6d687b2e146d3
+      internalID: 2024522433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TextHP
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 38
+        width: 16
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a54282124d00d4a888d74499d4dbcc48
+      internalID: -1123525117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Dots
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 26
+        width: 4
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 446d5e8a732e582ac9ab43acd591755e
+      internalID: -384626206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -284,13 +347,17 @@ TextureImporter:
     secondaryTextures: []
     nameFileIdTable:
       EnergyEmpty: -382434364
+      Dots: -384626206
       EnergyFullNS: 1069902458
       HealthEmpty: 688546738
       HealthFullNS: 721889658
+      TextEP: 2024522433
       HealthFull: -95867089
       EnergyFull: 1741644296
+      TextHP: -1123525117
       EnergyEmptyNS: 2146063903
       HealthEmptyNS: -1498139592
+      Heart&ManaUi_1: -1716177253
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
